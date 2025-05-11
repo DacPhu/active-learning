@@ -14,17 +14,15 @@
 
 """ Select a new batch based on results of simulated trajectories."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import copy
 import math
 
 import numpy as np
 
-from sampling_methods.wrapper_sampler_def import AL_MAPPING
-from sampling_methods.wrapper_sampler_def import WrapperSamplingMethod
+from sampling_methods.wrapper_sampler_def import (AL_MAPPING,
+                                                  WrapperSamplingMethod)
 
 
 class SimulateBatchSampler(WrapperSamplingMethod):

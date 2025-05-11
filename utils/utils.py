@@ -13,9 +13,7 @@
 # limitations under the License.
 
 """Utility functions for run_experiment.py."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import copy
 import os
@@ -24,18 +22,14 @@ import sys
 
 import numpy as np
 import scipy
-
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
-from sklearn.svm import LinearSVC
-from sklearn.svm import SVC
+from sklearn.svm import SVC, LinearSVC
+from tensorflow.io import gfile
 
-from tensorflow import gfile
-
-
+from utils.allconv import AllConv
 from utils.kernel_block_solver import BlockKernelSolver
 from utils.small_cnn import SmallCNN
-from utils.allconv import AllConv
 
 
 class Logger(object):
@@ -115,7 +109,7 @@ def get_mldata(data_dir, name):
     X, y = create_checker_unbalanced(split=[1./5, 4./5], n=10000, grid_size=4)
   else:
     filename = os.path.join(data_dir, dataname + ".pkl")
-    if not gfile.Exists(filename):
+    if not gfile.exists(filename):
       raise NameError("ERROR: dataset not available")
     data = pickle.load(gfile.GFile(filename, "r"))
     X = data["data"]

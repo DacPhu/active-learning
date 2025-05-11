@@ -13,24 +13,17 @@
 # limitations under the License.
 
 """Implements Small CNN model in keras using tensorflow backend."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import copy
 
-import keras
-import keras.backend as K
-from keras.layers import Activation
-from keras.layers import Conv2D
-from keras.layers import Dense
-from keras.layers import Dropout
-from keras.layers import Flatten
-from keras.layers import MaxPooling2D
-from keras.models import Sequential
-
 import numpy as np
 import tensorflow as tf
+import tensorflow.keras as keras
+import tensorflow.keras.backend as K
+from tensorflow.keras.layers import (Activation, Conv2D, Dense, Dropout,
+                                     Flatten, MaxPooling2D)
+from tensorflow.keras.models import Sequential
 
 
 class SmallCNN(object):

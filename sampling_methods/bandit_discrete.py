@@ -22,13 +22,12 @@ Similar to Hsu & Lin 2015, Active Learning by Learning.
 https://www.csie.ntu.edu.tw/~htlin/paper/doc/aaai15albl.pdf
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-from sampling_methods.wrapper_sampler_def import AL_MAPPING, WrapperSamplingMethod
+from sampling_methods.wrapper_sampler_def import (AL_MAPPING,
+                                                  WrapperSamplingMethod)
 
 
 class BanditDiscreteSampler(WrapperSamplingMethod):

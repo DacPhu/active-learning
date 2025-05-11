@@ -18,41 +18,32 @@ Downloads datasets using scikit datasets and can also parse csv file
 to save into pickle format.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from io import BytesIO
 import os
 import pickle
-import StringIO
 import tarfile
-import urllib2
-
-import keras.backend as K
-from keras.datasets import cifar10
-from keras.datasets import cifar100
-from keras.datasets import mnist
+from io import BytesIO, StringIO
 
 import numpy as np
 import pandas as pd
-from sklearn.datasets import fetch_20newsgroups_vectorized
-from sklearn.datasets import fetch_mldata
-from sklearn.datasets import load_breast_cancer
-from sklearn.datasets import load_iris
-import sklearn.datasets.rcv1
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
 
-from absl import app
-from absl import flags
-from tensorflow import gfile
+import tensorflow as tf
+import urllib3
+from absl import app, flags
+from keras.src.utils.module_utils import gfile
+from sklearn.datasets import (fetch_20newsgroups_vectorized, fetch_openml,
+                              fetch_rcv1, load_breast_cancer, load_iris)
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from tensorflow.keras import backend as K
+from tensorflow.keras.datasets import cifar10, cifar100, mnist
 
 flags.DEFINE_string('save_dir', '/tmp/data',
                     'Where to save outputs')
 flags.DEFINE_string('datasets', '',
                     'Which datasets to download, comma separated.')
 FLAGS = flags.FLAGS
+# DATASETS = FLAGS.datasets
 
 
 class Dataset(object):
@@ -71,7 +62,7 @@ def get_csv_data(filename):
   Returns:
     Dataset object
   """
-  f = gfile.GFile(filename, 'r')
+  f = tf.io.gfile.GFile(filename, 'r')
   mat = []
   for l in f:
     row = l.strip()
@@ -98,8 +89,8 @@ def get_wikipedia_talk_data():
   ANNOTATIONS_URL = 'https://ndownloader.figshare.com/files/7554637'
 
   def download_file(url):
-    req = urllib2.Request(url)
-    response = urllib2.urlopen(req)
+    http = urllib3.PoolManager()
+    response = http.request('GET', url)
     return response
 
   # Process comments
@@ -166,9 +157,9 @@ def get_cifar10():
   """
   url = 'http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
   def download_file(url):
-    req = urllib2.Request(url)
-    response = urllib2.urlopen(req)
-    return response
+      http = urllib3.PoolManager()
+      response = http.request('GET', url)
+      return response
   response = download_file(url)
   tmpfile = BytesIO()
   while True:
@@ -222,14 +213,7 @@ def get_mldata(dataset):
       X = tfidf.fit_transform(data.data)
       data.data = X
     elif dataset[0] == 'rcv1':
-      sklearn.datasets.rcv1.URL = (
-        'http://www.ai.mit.edu/projects/jmlr/papers/'
-        'volume5/lewis04a/a13-vector-files/lyrl2004_vectors')
-      sklearn.datasets.rcv1.URL_topics = (
-        'http://www.ai.mit.edu/projects/jmlr/papers/'
-        'volume5/lewis04a/a08-topic-qrels/rcv1-v2.topics.qrels.gz')
-      data = sklearn.datasets.fetch_rcv1(
-          data_home='/tmp')
+      data = fetch_rcv1(data_home='/tmp', download_if_missing=True)
     elif dataset[0] == 'wikipedia_attack':
       data = get_wikipedia_talk_data()
     elif dataset[0] == 'cifar10':
@@ -238,9 +222,9 @@ def get_mldata(dataset):
       data = get_keras_data(dataset[0])
     else:
       try:
-        data = fetch_mldata(dataset[0])
+        data = fetch_openml(dataset[0])
       except:
-        raise Exception('ERROR: failed to fetch data from mldata.org')
+        raise Exception('ERROR: failed to fetch data from openml.org')
     X = data.data
     y = data.target
     if X.shape[0] != y.shape[0]:

@@ -22,9 +22,7 @@ Each node has certain properties that are used in the AL method.
 Tree class is used to traverse a hierarchical clustering.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import copy
 

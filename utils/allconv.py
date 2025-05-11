@@ -13,22 +13,17 @@
 # limitations under the License.
 
 """Implements allconv model in keras using tensorflow backend."""
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+
+from __future__ import absolute_import, division, print_function
 
 import copy
 
 import keras
-import keras.backend as K
-from keras.layers import Activation
-from keras.layers import Conv2D
-from keras.layers import Dropout
-from keras.layers import GlobalAveragePooling2D
-from keras.models import Sequential
-
+import tensorflow.keras.backend as K
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras.layers import Activation, Conv2D, Dropout, GlobalAveragePooling2D
+from tensorflow.keras.models import Sequential
 
 
 class AllConv(object):

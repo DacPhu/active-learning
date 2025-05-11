@@ -19,15 +19,14 @@ This is an implementation of the method described in
 https://www.mpi-inf.mpg.de/fileadmin/inf/d2/Research_projects_files/EbertCVPR2012.pdf
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import copy
 
-from sklearn.neighbors import kneighbors_graph
-from sklearn.metrics import pairwise_distances
 import numpy as np
+from sklearn.metrics import pairwise_distances
+from sklearn.neighbors import kneighbors_graph
+
 from sampling_methods.sampling_def import SamplingMethod
 
 

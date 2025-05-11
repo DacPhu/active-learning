@@ -25,27 +25,20 @@ By default uses logistic regression but can also train using kernel SVM.
 
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import os
 import pickle
 import sys
-from time import gmtime
-from time import strftime
+from time import gmtime, strftime
 
 import numpy as np
-from sklearn.preprocessing import normalize
-from sklearn.preprocessing import StandardScaler
+from absl import app, flags
+from sklearn.preprocessing import StandardScaler, normalize
+from tensorflow.io import gfile
 
-from absl import app
-from absl import flags
-from tensorflow import gfile
-
-from sampling_methods.constants import AL_MAPPING
-from sampling_methods.constants import get_AL_sampler
-from sampling_methods.constants import get_wrapper_AL_mapping
+from sampling_methods.constants import (AL_MAPPING, get_AL_sampler,
+                                        get_wrapper_AL_mapping)
 from utils import utils
 
 flags.DEFINE_string("dataset", "letter", "Dataset name")

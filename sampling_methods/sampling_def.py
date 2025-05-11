@@ -19,12 +19,12 @@ for select_batch.  Each subclass implements select_batch_ with the desired
 signature for readability.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
 import abc
+
 import numpy as np
+
 
 class SamplingMethod(object):
   __metaclass__ = abc.ABCMeta
