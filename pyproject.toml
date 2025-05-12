@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "active-learning"
+name = "medical-active-learning"
 dynamic = ["version"]
 description = "Medical Image active learning"
 readme = { file = "README.md", content-type = "text/markdown" }
@@ -12,18 +12,16 @@ license = { file = "LICENSE" }
 dependencies = [
     "kagglehub~=0.3.12",
     "toml~=0.10.2",
-    "scipy~=0.19.1",
-    "numpy~=2.2.5",
+    "numpy~=2.1.3",
     "pandas~=2.2.3",
     "scikit-learn~=1.6.1",
     "matplotlib~=3.10.3",
     "tensorflow~=2.19.0",
-    "keras~=3.9.2",
-    "absl-py~=1.4.0"
+    "keras~=3.9.2"
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [project.scripts]
-download_dataset="datasets.__main__:main"
+datasets = "datasets.__main__:main"
