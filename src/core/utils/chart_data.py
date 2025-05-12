@@ -31,7 +31,7 @@ flags.DEFINE_string('source_dir',
                     'Directory with the output to analyze.')
 flags.DEFINE_string('save_dir', '/tmp/active_learning',
                     'Directory to save charts.')
-flags.DEFINE_string('dataset', 'letter', 'Dataset to analyze.')
+flags.DEFINE_string('datasets', 'letter', 'Dataset to analyze.')
 flags.DEFINE_string(
     'sampling_methods',
     ('uniform,margin,informative_diverse,'

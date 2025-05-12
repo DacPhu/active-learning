@@ -77,9 +77,9 @@ def get_csv_data(filename):
 
 
 def get_wikipedia_talk_data():
-  """Get wikipedia talk dataset.
+  """Get wikipedia talk datasets.
 
-  See here for more information about the dataset:
+  See here for more information about the datasets:
   https://figshare.com/articles/Wikipedia_Detox_Data/4054689
   Downloads annotated comments and annotations.
   """
@@ -126,7 +126,7 @@ def get_keras_data(dataname):
   elif dataname == 'mnist_keras':
     train, test = mnist.load_data()
   else:
-    raise NotImplementedError('dataset not supported')
+    raise NotImplementedError('datasets not supported')
 
   X = np.concatenate((train[0], test[0]))
   y = np.concatenate((train[1], test[1]))
@@ -144,12 +144,12 @@ def get_keras_data(dataname):
   return data
 
 
-# TODO(lishal): remove regular cifar10 dataset and only use dataset downloaded
+# TODO(lishal): remove regular cifar10 datasets and only use datasets downloaded
 # from keras to maintain image dims to create tensor for tf models
 # Requires adding handling in run_experiment.py for handling of different
 # training methods that require either 2d or tensor data.
 def get_cifar10():
-  """Get CIFAR-10 dataset from source dir.
+  """Get CIFAR-10 datasets from source dir.
 
   Slightly redundant with keras function to get cifar10 but this returns
   in flat format instead of keras numpy image tensor.

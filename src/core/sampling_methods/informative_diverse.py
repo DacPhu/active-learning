@@ -35,7 +35,7 @@ class InformativeClusterDiverseSampler(SamplingMethod):
   """Selects batch based on informative and diverse criteria.
 
     Returns highest uncertainty lowest margin points while maintaining
-    same distribution over clusters as entire dataset.
+    same distribution over clusters as entire datasets.
   """
 
   def __init__(self, X, y, seed):

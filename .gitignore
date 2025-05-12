@@ -176,3 +176,5 @@ assets/
 # Pem
 *.pem
 
+# Configs
+configs/development.toml

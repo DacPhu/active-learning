@@ -23,7 +23,8 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 
-from src.core.sampling_methods.constants import AL_MAPPING, get_all_possible_arms
+from src.core.sampling_methods.constants import (AL_MAPPING,
+                                                 get_all_possible_arms)
 from src.core.sampling_methods.sampling_def import SamplingMethod
 
 get_all_possible_arms()

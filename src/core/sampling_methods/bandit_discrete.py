@@ -28,8 +28,8 @@ from typing import Any
 
 import numpy as np
 
-from src.core.sampling_methods.wrapper_sampler_def import (AL_MAPPING,
-                                                           WrapperSamplingMethod)
+from src.core.sampling_methods.wrapper_sampler_def import (
+    AL_MAPPING, WrapperSamplingMethod)
 
 
 class BanditDiscreteSampler(WrapperSamplingMethod):

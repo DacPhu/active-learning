@@ -22,7 +22,8 @@ AL_MAPPING = {}
 
 def get_base_AL_mapping():
   from src.core.sampling_methods.graph_density import GraphDensitySampler
-  from src.core.sampling_methods.hierarchical_clustering_AL import HierarchicalClusterAL
+  from src.core.sampling_methods.hierarchical_clustering_AL import \
+      HierarchicalClusterAL
   from src.core.sampling_methods.informative_diverse import \
       InformativeClusterDiverseSampler
   from src.core.sampling_methods.kcenter_greedy import kCenterGreedy

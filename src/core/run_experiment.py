@@ -41,7 +41,7 @@ from src.core.sampling_methods.constants import (AL_MAPPING, get_AL_sampler,
                                                  get_wrapper_AL_mapping)
 from src.core.utils import utils
 
-flags.DEFINE_string("dataset", "letter", "Dataset name")
+flags.DEFINE_string("datasets", "letter", "Dataset name")
 flags.DEFINE_string("sampling_method", "margin",
                     ("Name of sampling method to use, can be any defined in "
                      "AL_MAPPING in sampling_methods.constants"))
@@ -127,7 +127,7 @@ def generate_one_curve(X,
       and depending on AL method may also need decision_function.
     confusion: percentage of labels of one class to flip to the other
     active_p: percent of batch to allocate to active learning
-    max_points: limit dataset size for preliminary
+    max_points: limit datasets size for preliminary
     standardize_data: wheter to standardize the data to 0 mean unit variance
     norm_data: whether to normalize the data.  Default is False for logistic
       regression.
@@ -138,7 +138,7 @@ def generate_one_curve(X,
     sampler_states: dictionary of sampler objects for debugging
   """
   # TODO(lishal): add option to find best hyperparameter setting first on
-  # full dataset and fix the hyperparameter for the rest of the routine
+  # full datasets and fix the hyperparameter for the rest of the routine
   # This will save computation and also lead to more stable behavior for the
   # test accuracy
 
@@ -315,7 +315,7 @@ def main(argv):
         results["sampler_output"] = sampler_output
         all_results[key] = results
   fields = [
-      "dataset", "sampler", "score_method", "select_method",
+      "datasets", "sampler", "score_method", "select_method",
       "active percentage", "warmstart size", "batch size", "confusion",
       "standardize", "normalize", "seed"
   ]

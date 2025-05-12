@@ -51,7 +51,7 @@ class Logger(object):
 
 
 def create_checker_unbalanced(split, n, grid_size):
-  """Creates a dataset with two classes that occupy one color of checkboard.
+  """Creates a datasets with two classes that occupy one color of checkboard.
 
   Args:
     split: splits to use for class imbalance.
@@ -97,12 +97,12 @@ def get_mldata(data_dir, name):
 
   Args:
     data_dir: directory to look in
-    name: dataset name, assumes data is saved in the save_dir with filename
+    name: datasets name, assumes data is saved in the save_dir with filename
       <name>.pkl
   Returns:
     data and targets
   Raises:
-    NameError: dataset not found in data folder.
+    NameError: datasets not found in data folder.
   """
   dataname = name
   if dataname == "checkerboard":
@@ -110,7 +110,7 @@ def get_mldata(data_dir, name):
   else:
     filename = os.path.join(data_dir, dataname + ".pkl")
     if not gfile.exists(filename):
-      raise NameError("ERROR: dataset not available")
+      raise NameError("ERROR: datasets not available")
     data = pickle.load(gfile.GFile(filename, "r"))
     X = data["data"]
     y = data["target"]
