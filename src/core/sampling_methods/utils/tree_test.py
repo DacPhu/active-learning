@@ -18,7 +18,7 @@ from __future__ import absolute_import, division, print_function
 
 import unittest
 
-from sampling_methods.utils import tree
+from src.core.sampling_methods.utils import tree
 
 
 class TreeTest(unittest.TestCase):

@@ -37,9 +37,9 @@ from absl import app, flags
 from sklearn.preprocessing import StandardScaler, normalize
 from tensorflow.io import gfile
 
-from sampling_methods.constants import (AL_MAPPING, get_AL_sampler,
-                                        get_wrapper_AL_mapping)
-from utils import utils
+from src.core.sampling_methods.constants import (AL_MAPPING, get_AL_sampler,
+                                                 get_wrapper_AL_mapping)
+from src.core.utils import utils
 
 flags.DEFINE_string("dataset", "letter", "Dataset name")
 flags.DEFINE_string("sampling_method", "margin",
@@ -177,7 +177,7 @@ def generate_one_curve(X,
   seed_batch = max(seed_batch, 6 * len(np.unique(y)))
 
   indices, X_train, y_train, X_val, y_val, X_test, y_test, y_noise = (
-      utils.get_train_val_test_splits(X,y,max_points,seed,confusion,
+      utils.get_train_val_test_splits(X, y, max_points, seed, confusion,
                                       seed_batch, split=data_splits))
 
   # Preprocess data

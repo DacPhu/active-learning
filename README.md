@@ -7,14 +7,14 @@ algorithms. There are a few key components to running active learning
 experiments:
 
 *   Main experiment script is
-    [`run_experiment.py`](run_experiment.py)
+    [`run_experiment.py`](src/core/run_experiment.py)
     with many flags for different run options.
 
 *   Supported datasets can be downloaded to a specified directory by running
-    [`utils/create_data.py`](utils/create_data.py).
+    [`utils/create_data.py`](src/core/utils/create_data.py).
 
 *   Supported active learning methods are in
-    [`sampling_methods`](sampling_methods/).
+    [`sampling_methods`](src/core/sampling_methods/).
 
 Below I will go into each component in more detail.
 
@@ -40,13 +40,13 @@ string of datasets via the `--datasets` flag.
 ## Running experiments
 
 There are a few key flags for
-[`run_experiment.py`](run_experiment.py):
+[`run_experiment.py`](src/core/run_experiment.py):
 
 *   `dataset`: name of the dataset, must match the save name used in
     `create_data.py`. Must also exist in the data_dir.
 
 *   `sampling_method`: active learning method to use. Must be specified in
-    [`sampling_methods/constants.py`](sampling_methods/constants.py).
+    [`sampling_methods/constants.py`](src/core/sampling_methods/constants.py).
 
 *   `warmstart_size`: initial batch of uniformly sampled examples to use as seed
     data. Float indicates percentage of total training data and integer
@@ -57,7 +57,7 @@ There are a few key flags for
 
 *   `score_method`: model to use to evaluate the performance of the sampling
     method. Must be in `get_model` method of
-    [`utils/utils.py`](utils/utils.py).
+    [`utils/utils.py`](src/core/utils/utils.py).
 
 *   `data_dir`: directory with saved datasets.
 
@@ -70,7 +70,7 @@ different model to select than to score/evaluate.
 ## Available active learning methods
 
 All named active learning methods are in
-[`sampling_methods/constants.py`](sampling_methods/constants.py).
+[`sampling_methods/constants.py`](src/core/sampling_methods/constants.py).
 
 You can also specify a mixture of active learning methods by following the
 pattern of `[sampling_method]-[mixture_weight]` separated by dashes; i.e.
@@ -96,9 +96,9 @@ Some supported sampling methods include:
 ### Adding new active learning methods
 
 Implement either a base sampler that inherits from
-[`SamplingMethod`](sampling_methods/sampling_def.py)
+[`SamplingMethod`](src/core/sampling_methods/sampling_def.py)
 or a meta-sampler that calls base samplers which inherits from
-[`WrapperSamplingMethod`](sampling_methods/wrapper_sampler_def.py).
+[`WrapperSamplingMethod`](src/core/sampling_methods/wrapper_sampler_def.py).
 
 The only method that must be implemented by any sampler is `select_batch_`,
 which can have arbitrary named arguments. The only restriction is that the name
@@ -106,17 +106,17 @@ for the same input must be consistent across all the samplers (i.e. the indices
 for already selected examples all have the same name across samplers). Adding a
 new named argument that hasn't been used in other sampling methods will require
 feeding that into the `select_batch` call in
-[`run_experiment.py`](run_experiment.py).
+[`run_experiment.py`](src/core/run_experiment.py).
 
 After implementing your sampler, be sure to add it to
-[`constants.py`](sampling_methods/constants.py)
+[`constants.py`](src/core/sampling_methods/constants.py)
 so that it can be called from
-[`run_experiment.py`](run_experiment.py).
+[`run_experiment.py`](src/core/run_experiment.py).
 
 ## Available models
 
 All available models are in the `get_model` method of
-[`utils/utils.py`](utils/utils.py).
+[`utils/utils.py`](src/core/utils/utils.py).
 
 Supported methods:
 
@@ -151,11 +151,11 @@ New models must follow the scikit learn api and implement the following methods
     measure of uncertainty.
 
 See
-[`small_cnn.py`](utils/small_cnn.py)
+[`small_cnn.py`](src/core/utils/small_cnn.py)
 for an example.
 
 After implementing your new model, be sure to add it to `get_model` method of
-[`utils/utils.py`](utils/utils.py).
+[`utils/utils.py`](src/core/utils/utils.py).
 
 Currently models must be added on a one-off basis and not all scikit-learn
 classifiers are supported due to the need for user input on whether and how to
@@ -166,6 +166,6 @@ model.
 ## Collecting results and charting
 
 The
-[`utils/chart_data.py`](utils/chart_data.py)
+[`utils/chart_data.py`](src/core/utils/chart_data.py)
 script handles processing of data and charting for a specified dataset and
 source directory.

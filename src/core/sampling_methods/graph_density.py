@@ -22,12 +22,13 @@ https://www.mpi-inf.mpg.de/fileadmin/inf/d2/Research_projects_files/EbertCVPR201
 from __future__ import absolute_import, division, print_function
 
 import copy
+from typing import Any
 
 import numpy as np
 from sklearn.metrics import pairwise_distances
 from sklearn.neighbors import kneighbors_graph
 
-from sampling_methods.sampling_def import SamplingMethod
+from src.core.sampling_methods.sampling_def import SamplingMethod
 
 
 class GraphDensitySampler(SamplingMethod):
@@ -85,7 +86,7 @@ class GraphDensitySampler(SamplingMethod):
     return list(batch)
 
   def to_dict(self):
-    output = {}
+    output: dict[str, Any] = {}
     output['connectivity'] = self.connect
     output['graph_density'] = self.starting_density
     return output

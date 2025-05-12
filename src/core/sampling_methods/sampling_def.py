@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Abstract class for wrapper sampling methods that call base sampling methods.
+"""Abstract class for sampling methods.
 
 Provides interface to sampling methods that allow same signature
 for select_batch.  Each subclass implements select_batch_ with the desired
@@ -23,25 +23,31 @@ from __future__ import absolute_import, division, print_function
 
 import abc
 
-from sampling_methods.constants import AL_MAPPING, get_all_possible_arms
-from sampling_methods.sampling_def import SamplingMethod
-
-get_all_possible_arms()
+import numpy as np
 
 
-class WrapperSamplingMethod(SamplingMethod):
-  __metaclass__ = abc.ABCMeta
+class SamplingMethod(metaclass=abc.ABCMeta):
 
-  def initialize_samplers(self, mixtures):
-    methods = []
-    for m in mixtures:
-      methods += m['methods']
-    methods = set(methods)
-    self.base_samplers = {}
-    for s in methods:
-      self.base_samplers[s] = AL_MAPPING[s](self.X, self.y, self.seed)
-    self.samplers = []
-    for m in mixtures:
-      self.samplers.append(
-          AL_MAPPING['mixture_of_samplers'](self.X, self.y, self.seed, m,
-                                            self.base_samplers))
+  @abc.abstractmethod
+  def __init__(self, X, y, seed, **kwargs):
+    self.X = X
+    self.y = y
+    self.seed = seed
+
+  def flatten_X(self):
+    shape = self.X.shape
+    flat_X = self.X
+    if len(shape) > 2:
+      flat_X = np.reshape(self.X, (shape[0],np.prod(shape[1:])))
+    return flat_X
+
+
+  @abc.abstractmethod
+  def select_batch_(self):
+    return
+
+  def select_batch(self, **kwargs):
+    return self.select_batch_(**kwargs)
+
+  def to_dict(self):
+    return None

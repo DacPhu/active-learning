@@ -23,10 +23,9 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.decomposition import PCA
-from sklearn.neighbors import kneighbors_graph
 
-from sampling_methods.sampling_def import SamplingMethod
-from sampling_methods.utils.tree import Tree
+from src.core.sampling_methods.sampling_def import SamplingMethod
+from src.core.sampling_methods.utils.tree import Tree
 
 
 class HierarchicalClusterAL(SamplingMethod):
@@ -93,11 +92,11 @@ class HierarchicalClusterAL(SamplingMethod):
       self.transformed_X = transformer.fit_transform(X)
       #connectivity = kneighbors_graph(self.transformed_X,max_features)
       self.model = AgglomerativeClustering(
-          affinity=affinity, linkage=linkage, n_clusters=len(classes))
+          metric=affinity, linkage=linkage, n_clusters=len(classes))
       self.fit_cluster(self.transformed_X)
     else:
       self.model = AgglomerativeClustering(
-          affinity=affinity, linkage=linkage, n_clusters=len(classes))
+          metric=affinity, linkage=linkage, n_clusters=len(classes))
       self.fit_cluster(self.X)
     self.y = y
 
@@ -112,7 +111,7 @@ class HierarchicalClusterAL(SamplingMethod):
       self.model.fit(X)
       self.already_clustered = True
     self.n_leaves = self.model.n_leaves_
-    self.n_components = self.model.n_components_
+    self.n_components = self.model.n_clusters
     self.children_list = self.model.children_
 
   def create_tree(self):

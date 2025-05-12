@@ -25,7 +25,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from sklearn.cluster import MiniBatchKMeans
 
-from sampling_methods.sampling_def import SamplingMethod
+from src.core.sampling_methods.sampling_def import SamplingMethod
 
 
 class RepresentativeClusterMeanSampling(SamplingMethod):
@@ -62,7 +62,7 @@ class RepresentativeClusterMeanSampling(SamplingMethod):
     min_margin_by_class = np.min(abs(distances[already_selected]),axis=0)
     unlabeled_in_margin = np.array([i for i in range(len(self.y))
                                     if i not in already_selected and
-                                    any(distances[i]<min_margin_by_class)])
+                                    np.any(distances[i]<min_margin_by_class)])
     if len(unlabeled_in_margin) < N:
       print("Not enough points within margin of classifier, using simple uncertainty sampling")
       return rank_ind[0:N]

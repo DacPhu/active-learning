@@ -21,8 +21,8 @@ import math
 
 import numpy as np
 
-from sampling_methods.wrapper_sampler_def import (AL_MAPPING,
-                                                  WrapperSamplingMethod)
+from src.core.sampling_methods.wrapper_sampler_def import (AL_MAPPING,
+                                                           WrapperSamplingMethod)
 
 
 class SimulateBatchSampler(WrapperSamplingMethod):
@@ -240,7 +240,7 @@ class SimulateBatchSampler(WrapperSamplingMethod):
     best_s = np.argmax([r[0][0] for r in results])
 
     # Make sure that model object fed in did not change during simulations
-    assert all(y == copy_y)
+    assert np.all(y == copy_y)
     assert all([copy_selected[i] == already_selected[i]
                 for i in range(len(already_selected))])
 
@@ -253,7 +253,7 @@ class SimulateBatchSampler(WrapperSamplingMethod):
       return list(unique[argcount[0:N]])
     return results[best_s][2]
 
-  def to_dict(self):
-    output = {}
+  def to_dict(self) -> dict:
+    output: dict = {}
     output['simulated_trajectories'] = self.trace
     return output

@@ -20,8 +20,8 @@ from __future__ import absolute_import, division, print_function
 
 import copy
 
-from sampling_methods.constants import AL_MAPPING, get_base_AL_mapping
-from sampling_methods.sampling_def import SamplingMethod
+from src.core.sampling_methods.constants import AL_MAPPING, get_base_AL_mapping
+from src.core.sampling_methods.sampling_def import SamplingMethod
 
 get_base_AL_mapping()
 

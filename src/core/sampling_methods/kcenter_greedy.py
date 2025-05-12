@@ -31,7 +31,7 @@ from __future__ import absolute_import, division, print_function
 import numpy as np
 from sklearn.metrics import pairwise_distances
 
-from sampling_methods.sampling_def import SamplingMethod
+from src.core.sampling_methods.sampling_def import SamplingMethod
 
 
 class kCenterGreedy(SamplingMethod):
@@ -94,7 +94,7 @@ class kCenterGreedy(SamplingMethod):
       self.features = model.transform(self.X)
       print('Calculating distances...')
       self.update_distances(already_selected, only_new=False, reset_dist=True)
-    except:
+    except Exception as e:
       print('Using flat_X as features.')
       self.update_distances(already_selected, only_new=True, reset_dist=False)
 

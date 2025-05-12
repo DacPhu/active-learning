@@ -12,29 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Implements Small CNN model in keras using tensorflow backend."""
+"""Implements allconv model in keras using tensorflow backend."""
+
 from __future__ import absolute_import, division, print_function
 
 import copy
 
+import keras
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras as keras
 import tensorflow.keras.backend as K
-from tensorflow.keras.layers import (Activation, Conv2D, Dense, Dropout,
-                                     Flatten, MaxPooling2D)
+from tensorflow.keras.layers import (Activation, Conv2D, Dropout,
+                                     GlobalAveragePooling2D)
 from tensorflow.keras.models import Sequential
 
 
-class SmallCNN(object):
-  """Small convnet that matches sklearn api.
-
-  Implements model from
-  https://github.com/fchollet/keras/blob/master/examples/cifar10_cnn.py
-  Adapts for inputs of variable size, expects data to be 4d tensor, with
-  # of obserations as first dimension and other dimensions to correspond to
-  length width and # of channels in image.
-  """
+class AllConv(object):
+  """allconv network that matches sklearn api."""
 
   def __init__(self,
                random_state=1,
@@ -60,30 +54,35 @@ class SmallCNN(object):
     # assumes that data axis order is same as the backend
     input_shape = X.shape[1:]
     np.random.seed(self.random_state)
-    tf.set_random_seed(self.random_state)
+    tf.random.set_seed(self.random_state)
 
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), padding='same',
+    model.add(Conv2D(96, (3, 3), padding='same',
                      input_shape=input_shape, name='conv1'))
     model.add(Activation('relu'))
-    model.add(Conv2D(32, (3, 3), name='conv2'))
+    model.add(Conv2D(96, (3, 3), name='conv2', padding='same'))
     model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-
-    model.add(Conv2D(64, (3, 3), padding='same', name='conv3'))
-    model.add(Activation('relu'))
-    model.add(Conv2D(64, (3, 3), name='conv4'))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-
-    model.add(Flatten())
-    model.add(Dense(512, name='dense1'))
+    model.add(Conv2D(96, (3, 3), strides=(2, 2), padding='same', name='conv3'))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
-    model.add(Dense(self.n_classes, name='dense2'))
-    model.add(Activation('softmax'))
+
+    model.add(Conv2D(192, (3, 3), name='conv4', padding='same'))
+    model.add(Activation('relu'))
+    model.add(Conv2D(192, (3, 3), name='conv5', padding='same'))
+    model.add(Activation('relu'))
+    model.add(Conv2D(192, (3, 3), strides=(2, 2), name='conv6', padding='same'))
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+
+    model.add(Conv2D(192, (3, 3), name='conv7', padding='same'))
+    model.add(Activation('relu'))
+    model.add(Conv2D(192, (1, 1), name='conv8', padding='valid'))
+    model.add(Activation('relu'))
+    model.add(Conv2D(10, (1, 1),  name='conv9', padding='valid'))
+
+    model.add(GlobalAveragePooling2D())
+    model.add(Activation('softmax', name='activation_top'))
+    model.summary()
 
     try:
       optimizer = getattr(keras.optimizers, self.solver)
@@ -126,7 +125,7 @@ class SmallCNN(object):
     transformed_y = np.array(map(mapper, y))
     return transformed_y
 
-  def fit(self, X_train, y_train, sample_weight=None):
+  def fit(self, X_train, y_train, sample_weight=None) -> None:
     y_mat = self.create_y_mat(y_train)
 
     if self.model is None:
@@ -161,9 +160,9 @@ class SmallCNN(object):
     inp = [model.input]
     activations = []
 
-    # Get activations of the first dense layer.
+    # Get activations of the last conv layer.
     output = [layer.output for layer in model.layers if
-              layer.name == 'dense1'][0]
+              layer.name == 'conv9'][0]
     func = K.function(inp + [K.learning_phase()], [output])
     for i in range(int(X.shape[0]/self.batch_size) + 1):
       minibatch = X[i * self.batch_size
@@ -173,9 +172,10 @@ class SmallCNN(object):
       layer_output = func(list_inputs)[0]
       activations.append(layer_output)
     output = np.vstack(tuple(activations))
+    output = np.reshape(output, (output.shape[0],np.prod(output.shape[1:])))
     return output
 
-  def get_params(self, deep = False):
+  def get_params(self, deep = False) -> dict:
     params = {}
     params['solver'] = self.solver
     params['epochs'] = self.epochs

@@ -143,22 +143,22 @@ class BlockKernelSolver(object):
     val_acc = metrics.accuracy_score(val_y, val_pred)
     return val_acc
 
-  def decision_function(self, X, type='predicted'):
+  def decision_function(self, X, _type: str = 'predicted'):
     # Return the predicted value of the best class
     # Margin_AL will see that a vector is returned and not a matrix and
     # simply select the points that have the lowest predicted value to label
     K = metrics.pairwise.pairwise_kernels(
         X, self.X_train, metric=self.kernel, gamma=self.gamma)
     predicted = K.dot(self.coef_)
-    if type == 'scores':
+    if _type == 'scores':
       val_best = np.max(K.dot(self.coef_), axis=1)
       return val_best
-    elif type == 'predicted':
+    elif _type == 'predicted':
       return predicted
     else:
       raise NotImplementedError('Invalid return type for decision function.')
 
-  def get_params(self, deep=False):
+  def get_params(self, deep=False) -> dict:
     params = {}
     params['C'] = self.C
     params['gamma'] = self.gamma

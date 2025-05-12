@@ -23,10 +23,12 @@ match the cluster distribution of the entire training set.
 
 from __future__ import absolute_import, division, print_function
 
+from typing import Any
+
 import numpy as np
 from sklearn.cluster import MiniBatchKMeans
 
-from sampling_methods.sampling_def import SamplingMethod
+from src.core.sampling_methods.sampling_def import SamplingMethod
 
 
 class InformativeClusterDiverseSampler(SamplingMethod):
@@ -95,6 +97,6 @@ class InformativeClusterDiverseSampler(SamplingMethod):
     return new_batch
 
   def to_dict(self):
-    output = {}
+    output: dict[str, Any] = {}
     output['cluster_membership'] = self.cluster_labels
     return output

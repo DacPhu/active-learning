@@ -27,9 +27,9 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC, LinearSVC
 from tensorflow.io import gfile
 
-from utils.allconv import AllConv
-from utils.kernel_block_solver import BlockKernelSolver
-from utils.small_cnn import SmallCNN
+from src.core.utils.allconv import AllConv
+from src.core.utils.kernel_block_solver import BlockKernelSolver
+from src.core.utils.small_cnn import SmallCNN
 
 
 class Logger(object):
@@ -84,7 +84,7 @@ def flatten_X(X):
   shape = X.shape
   flat_X = X
   if len(shape) > 2:
-    flat_X = np.reshape(X, (shape[0], np.product(shape[1:])))
+    flat_X = np.reshape(X, (shape[0], np.prod(shape[1:])))
   return flat_X
 
 
@@ -322,9 +322,9 @@ def get_train_val_test_splits(X, y, max_points, seed, confusion, seed_batch,
   y_val = y_noise[indices[train_split:val_split]]
   y_test = y_noise[indices[val_split:max_points]]
   # Make sure that we have enough observations of each class for 2-fold cv
-  assert all(get_class_counts(y_noise, y_train[0:seed_batch]) >= 4)
+  assert np.all(get_class_counts(y_noise, y_train[0:seed_batch]) >= 4)
   # Make sure that returned shuffled indices are correct
-  assert all(y_noise[indices[0:max_points]] ==
+  assert np.all(y_noise[indices[0:max_points]] ==
              np.concatenate((y_train, y_val, y_test), axis=0))
   return (indices[0:max_points], X_train, y_train,
           X_val, y_val, X_test, y_test, y_noise)

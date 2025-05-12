@@ -24,10 +24,12 @@ https://www.csie.ntu.edu.tw/~htlin/paper/doc/aaai15albl.pdf
 
 from __future__ import absolute_import, division, print_function
 
+from typing import Any
+
 import numpy as np
 
-from sampling_methods.wrapper_sampler_def import (AL_MAPPING,
-                                                  WrapperSamplingMethod)
+from src.core.sampling_methods.wrapper_sampler_def import (AL_MAPPING,
+                                                           WrapperSamplingMethod)
 
 
 class BanditDiscreteSampler(WrapperSamplingMethod):
@@ -115,7 +117,7 @@ class BanditDiscreteSampler(WrapperSamplingMethod):
     return sample
 
   def to_dict(self):
-    output = {}
+    output: dict[str, Any] = {}
     output['samplers'] = self.base_samplers
     output['arm_probs'] = self.probs
     output['pull_history'] = self.pull_history

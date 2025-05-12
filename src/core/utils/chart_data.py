@@ -49,7 +49,7 @@ FLAGS = flags.FLAGS
 def combine_results(files, diff=False):
   all_results = {}
   for f in files:
-    data = pickle.load(gfile.FastGFile(f, 'r'))
+    data = pickle.load(gfile.GFile(f, 'r'))
     for k in data:
       if isinstance(k, tuple):
         data[k].pop('noisy_targets')
