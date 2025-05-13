@@ -8,13 +8,12 @@ from pathlib import Path
 import pytorch_lightning as pl
 import setproctitle
 import torch
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.loggers.wandb import WandbLogger
-
 from core.configs import cfg
 from core.train_learners import (FullySupervisedLearner, SourceFreeLearner,
                                  SourceLearner, SourceTargetLearner)
 from core.utils.misc import mkdir, parse_args
+from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers.wandb import WandbLogger
 
 warnings.filterwarnings("ignore")
 
@@ -86,7 +85,7 @@ def main():
             entity=cfg.WANDB.ENTITY,
             group=cfg.WANDB.GROUP,
             config=cfg,
-            save_dir=".",
+            save_dir="../..",
         )
 
     seed = cfg.SEED

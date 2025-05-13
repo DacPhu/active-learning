@@ -1,4 +1,3 @@
-import copy
 import math
 import os
 
@@ -10,8 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from PIL import Image
 from tqdm import tqdm
 
-from core.configs import cfg
-from core.utils.misc import get_color_pallete
+from libraries.halo.core.configs import cfg
 
 from .floating_region import FloatingRegionScore
 

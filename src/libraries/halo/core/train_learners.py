@@ -9,15 +9,17 @@ from geoopt.optim import RiemannianSGD
 from torch.optim.lr_scheduler import LinearLR, PolynomialLR, SequentialLR
 from torch.utils.data import DataLoader
 
-from core.active.build import RegionSelection
-from core.configs import cfg
-from core.datasets import build_dataset
-from core.datasets.dataset_path_catalog import DatasetCatalog
-from core.loss.local_consistent_loss import LocalConsistentLoss
-from core.loss.negative_learning_loss import NegativeLearningLoss
-from core.models import build_classifier, build_feature_extractor
-from core.utils.misc import load_checkpoint
-from core.utils.visualize import visualize_wrong
+from libraries.halo.core.active.build import RegionSelection
+from libraries.halo.core.configs import cfg
+from libraries.halo.core.datasets import build_dataset
+from libraries.halo.core.datasets.dataset_path_catalog import DatasetCatalog
+from libraries.halo.core.loss.local_consistent_loss import LocalConsistentLoss
+from libraries.halo.core.loss.negative_learning_loss import \
+    NegativeLearningLoss
+from libraries.halo.core.models import (build_classifier,
+                                        build_feature_extractor)
+from libraries.halo.core.utils.misc import load_checkpoint
+from libraries.halo.core.utils.visualize import visualize_wrong
 
 NUM_WORKERS = 4
 

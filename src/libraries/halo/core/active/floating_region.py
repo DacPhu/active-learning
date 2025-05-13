@@ -1,11 +1,10 @@
-import json
 import math
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from core.configs import cfg
+from libraries.halo.core.configs import cfg
 
 from ..utils.hyperbolic import HyperMapper
 

@@ -177,3 +177,6 @@ assets/
 
 # Configs
 configs/development.toml
+
+# Temp
+temp

@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from PIL import Image
 
-from core.configs import cfg
+from libraries.halo.core.configs import cfg
 
 
 def mkdir(path):

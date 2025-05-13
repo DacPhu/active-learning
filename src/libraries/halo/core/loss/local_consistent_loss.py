@@ -1,6 +1,7 @@
 import torch.nn as nn
 
-from core.loss.boundary import DetectSPBoundary, LocalDiscrepancy
+from libraries.halo.core.loss.boundary import (DetectSPBoundary,
+                                               LocalDiscrepancy)
 
 
 class LocalConsistentLoss(nn.Module):

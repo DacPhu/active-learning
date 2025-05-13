@@ -4,8 +4,8 @@ import torch
 import torch.nn.functional as F
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-from core.active.floating_region import FloatingRegionScore
-from core.configs import cfg
+from libraries.halo.core.active.floating_region import FloatingRegionScore
+from libraries.halo.core.configs import cfg
 
 CITYSCAPES_MEAN = torch.Tensor(
     [123.675, 116.28, 103.53]).reshape(1, 1, 3).numpy()

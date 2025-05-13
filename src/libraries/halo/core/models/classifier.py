@@ -1,9 +1,8 @@
-import matplotlib.pyplot as plt
 import torch
 import torch.nn.functional as F
 from torch import nn
 
-from core.configs import cfg
+from libraries.halo.core.configs import cfg
 
 from ..utils.hyperbolic import HyperMapper, HyperMLR
 
