@@ -1,189 +1,211 @@
-import argparse
-import errno
-import os
-from collections import OrderedDict
-
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from PIL import Image
+import torch.nn.functional as F
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+from core.active.floating_region import FloatingRegionScore
 from core.configs import cfg
 
+CITYSCAPES_MEAN = torch.Tensor(
+    [123.675, 116.28, 103.53]).reshape(1, 1, 3).numpy()
+CITYSCAPES_STD = torch.Tensor([58.395, 57.12, 57.375]).reshape(1, 1, 3).numpy()
 
-def mkdir(path):
-    try:
-        os.makedirs(path)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-
-
-def intersectionAndUnion(output, target, K, ignore_index=255):
-    # 'K' classes, output and target sizes are N or N * L or N * H * W, each value in range 0 to K - 1.
-    assert output.ndim in [1, 2, 3]
-    assert output.shape == target.shape
-    output = output.reshape(output.size).copy()
-    target = target.reshape(target.size)
-    output[np.where(target == ignore_index)[0]] = 255
-    intersection = output[np.where(output == target)[0]]
-    area_intersection, _ = np.histogram(intersection, bins=np.arange(K + 1))
-    area_output, _ = np.histogram(output, bins=np.arange(K + 1))
-    area_target, _ = np.histogram(target, bins=np.arange(K + 1))
-    area_union = area_output + area_target - area_intersection
-    return area_intersection, area_union, area_target
+np.random.seed(cfg.SEED+1)
+VIZ_LIST = list(np.random.randint(0, 500, 20))
 
 
-def intersectionAndUnionGPU(output, target, K, ignore_index=255):
-    # 'K' classes, output and target sizes are N or N * L or N * H * W, each value in range 0 to K - 1.
-    assert output.dim() in [1, 2, 3]
-    assert output.shape == target.shape
-    output = output.view(-1)
-    target = target.view(-1)
-    output[target == ignore_index] = ignore_index
-    intersection = output[output == target]
-    area_intersection = torch.histc(intersection.float().cpu(), bins=K, min=0, max=K - 1)
-    area_output = torch.histc(output.float().cpu(), bins=K, min=0, max=K - 1)
-    area_target = torch.histc(target.float().cpu(), bins=K, min=0, max=K - 1)
-    area_union = area_output + area_target - area_intersection
-    return area_intersection.cuda(), area_union.cuda(), area_target.cuda()
+def visualize_wrong(image, output, decoder_out, gt_segm_map, name, cfg, cmap1='gray', cmap2='viridis', alpha=0.7):
 
+    floating_region_score = FloatingRegionScore(
+        in_channels=cfg.MODEL.NUM_CLASSES, size=2 * cfg.ACTIVE.RADIUS_K + 1).cuda()
 
-def get_color_pallete(npimg, dataset="voc"):
-    out_img = Image.fromarray(npimg.astype("uint8")).convert("P")
-    if dataset == "city":
-        cityspallete = [
-            128,
-            64,
-            128,
-            244,
-            35,
-            232,
-            70,
-            70,
-            70,
-            102,
-            102,
-            156,
-            190,
-            153,
-            153,
-            153,
-            153,
-            153,
-            250,
-            170,
-            30,
-            220,
-            220,
-            0,
-            107,
-            142,
-            35,
-            152,
-            251,
-            152,
-            0,
-            130,
-            180,
-            220,
-            20,
-            60,
-            255,
-            0,
-            0,
-            0,
-            0,
-            142,
-            0,
-            0,
-            70,
-            0,
-            60,
-            100,
-            0,
-            80,
-            100,
-            0,
-            0,
-            230,
-            119,
-            11,
-            32,
-        ]
-        out_img.putpalette(cityspallete)
+    if cfg.MODEL.HYPER:
+        score, impurity, entropy = floating_region_score(
+            output, decoder_out=decoder_out, unc_type='entropy', pur_type='ripu', normalize=True)
+        _, _, hypunc = floating_region_score(
+            output, decoder_out=decoder_out, unc_type='hyperbolic', pur_type='ripu', normalize=True)
+        _, _, hypcert = floating_region_score(
+            output, decoder_out=decoder_out, unc_type='certainty', pur_type='ripu', normalize=True)
     else:
-        vocpallete = _getvocpallete(256)
-        out_img.putpalette(vocpallete)
-    return out_img
+        score, impurity, entropy = floating_region_score(
+            output, unc_type='entropy', pur_type='ripu', normalize=True)
 
+    img_np = F.interpolate(image.unsqueeze(
+        0), size=decoder_out.shape[-2:], mode='nearest')[0]   # 640, 1280 -->  160, 320
+    img_np = img_np.cpu().numpy().transpose(1, 2, 0)
+    img_np = (img_np * CITYSCAPES_STD + CITYSCAPES_MEAN).astype(np.uint8)
 
-def _getvocpallete(num_cls):
-    n = num_cls
-    pallete = [0] * (n * 3)
-    for j in range(0, n):
-        lab = j
-        pallete[j * 3 + 0] = 0
-        pallete[j * 3 + 1] = 0
-        pallete[j * 3 + 2] = 0
-        i = 0
-        while lab > 0:
-            pallete[j * 3 + 0] |= ((lab >> 0) & 1) << (7 - i)
-            pallete[j * 3 + 1] |= ((lab >> 1) & 1) << (7 - i)
-            pallete[j * 3 + 2] |= ((lab >> 2) & 1) << (7 - i)
-            i = i + 1
-            lab >>= 3
-    return pallete
+    score_np = score.cpu().numpy()
+    entropy_np = entropy.cpu().numpy()
+    hypunc_np = hypunc.cpu().numpy()
+    hypcert_np = hypcert.cpu().numpy()
+    impurity_np = impurity.cpu().numpy()
 
+    # constrained_layout = True
+    fig, axes = plt.subplots(4, 3, figsize=(10, 10))
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Active Domain Adaptive Semantic Segmentation Training")
-    parser.add_argument("-cfg", "--config-file", default="", metavar="FILE", help="path to config file", type=str)
-    parser.add_argument(
-        "--proctitle",
-        type=str,
-        default="HALO",
-        help="allow a process to change its title",
-    )
-    parser.add_argument(
-        "opts", help="Modify config options using the command-line", default=None, nargs=argparse.REMAINDER
-    )
+    axes[0, 0].set_title('Hyper Uncertainty')
+    axes[0, 0].imshow(img_np, cmap=cmap1)
+    im_score = axes[0, 0].imshow(hypunc_np,  cmap=cmap2, alpha=alpha)
+    axes[0, 0].xaxis.set_visible(False)
+    axes[0, 0].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[0, 0])
+    cax = divider.append_axes("left", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='left')
 
-    args = parser.parse_args()
+    axes[1, 0].set_title('Entropy')
+    axes[1, 0].imshow(img_np, cmap=cmap1)
+    im_score = axes[1, 0].imshow(entropy_np,  cmap=cmap2, alpha=alpha)
+    axes[1, 0].xaxis.set_visible(False)
+    axes[1, 0].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[1, 0])
+    cax = divider.append_axes("left", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='left')
 
-    if args.opts is not None and args.opts != []:
-        args.opts[-1] = args.opts[-1].strip("\r\n")
+    axes[2, 0].set_title('Impurity')
+    axes[2, 0].imshow(img_np, cmap=cmap1)
+    im_score = axes[2, 0].imshow(impurity_np,  cmap=cmap2, alpha=alpha)
+    axes[2, 0].xaxis.set_visible(False)
+    axes[2, 0].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[2, 0])
+    cax = divider.append_axes("left", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='left')
 
-    cfg.set_new_allowed(True)
-    cfg.merge_from_file(args.config_file)
-    cfg.merge_from_list(args.opts)
-    cfg.SAVE_DIR = os.path.join(cfg.OUTPUT_DIR, cfg.NAME)
-    print("Saving to {}".format(cfg.SAVE_DIR))
-    cfg.freeze()
+    axes[3, 0].set_title('Hyper Certainty')
+    axes[3, 0].imshow(img_np, cmap=cmap1)
+    im_score = axes[3, 0].imshow(hypcert_np,  cmap=cmap2, alpha=alpha)
+    axes[3, 0].xaxis.set_visible(False)
+    axes[3, 0].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[3, 0])
+    cax = divider.append_axes("left", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='left')
 
-    return args
+    output_large = F.interpolate(
+        output, size=image.shape[-2:], mode='bilinear', align_corners=True)
+    pred_segm_map = output_large.argmax(dim=1).squeeze(dim=0).cpu().numpy()
+    # pred_mask = get_color_pallete(pred_segm_map, "city")
+    # pred_mask = pred_mask.convert('RGB')
+    gt_segm_map = gt_segm_map.squeeze(dim=0).cpu().numpy()
+    # gt_mask = get_color_pallete(gt_segm_map, "city")
+    # gt_mask = gt_mask.convert('RGB')
 
+    # # plot gt semantic segmentation map
+    # axes[1,0].set_title('GT Segmentation Map')
+    # # axes[1,0].imshow(img_np, cmap=cmap1)
+    # im_gt = axes[1,0].imshow(gt_mask) #, cmap=cmap2, alpha=alpha)
+    # axes[1,0].xaxis.set_visible(False)
+    # axes[1,0].yaxis.set_visible(False)
 
-def load_checkpoint(model, path, module="feature_extractor"):
-    print("Loading checkpoint from {}".format(path))
-    if str(path).endswith(".ckpt"):
-        checkpoint = torch.load(path, map_location=torch.device("cpu"))["state_dict"]
-        model_weights = {k: v for k, v in checkpoint.items() if k.startswith(module)}
-        model_weights = OrderedDict([[k.split(module + ".")[-1], v.cpu()] for k, v in model_weights.items()])
-        model.load_state_dict(model_weights)
-    elif str(path).endswith(".pth"):
-        checkpoint = torch.load(cfg.resume, map_location=torch.device("cpu"))
-        model_weights = checkpoint[module]
-        model_weights = strip_prefix_if_present(checkpoint[module], "module.")
-        model.load_state_dict(model_weights)
-    else:
-        raise NotImplementedError("Only support .ckpt and .pth file")
+    # # plot predicted semantic segmentation map
+    # axes[1,1].set_title('Predicted Segmentation Map')
+    # # axes[1,1].imshow(img_np, cmap=cmap1)
+    # im_pred = axes[1,1].imshow(pred_mask) #, cmap=cmap2, alpha=alpha)
+    # axes[1,1].xaxis.set_visible(False)
+    # axes[1,1].yaxis.set_visible(False)
 
+    mask1 = pred_segm_map != gt_segm_map
+    mask2 = gt_segm_map != 255
 
-def strip_prefix_if_present(state_dict, prefix):
-    keys = sorted(state_dict.keys())
-    if not all(key.startswith(prefix) for key in keys):
-        return state_dict
-    stripped_state_dict = OrderedDict()
-    for key, value in state_dict.items():
-        stripped_state_dict[key.replace(prefix, "")] = value
-    return stripped_state_dict
+    wrong_pred_mask = (mask1 * mask2)*1.0
+    wrong_pred_mask = F.interpolate(torch.Tensor(wrong_pred_mask).unsqueeze(0).unsqueeze(
+        0), size=decoder_out.shape[-2:], mode='nearest')[0, 0]   # 640, 1280 -->  160, 320
+    wrong_pred_mask = wrong_pred_mask.cpu().numpy()
+
+    axes[0, 1].set_title('Hyper Uncertainty of Wrong Predictions')
+    axes[0, 1].imshow(img_np, cmap=cmap1)
+    im_score = axes[0, 1].imshow(
+        hypunc_np*wrong_pred_mask,  cmap=cmap2, alpha=alpha)
+    axes[0, 1].xaxis.set_visible(False)
+    axes[0, 1].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[0, 1])
+    cax = divider.append_axes("right", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='right')
+
+    axes[1, 1].set_title('Entropy of Wrong Predictions')
+    axes[1, 1].imshow(img_np, cmap=cmap1)
+    im_score = axes[1, 1].imshow(
+        entropy_np*wrong_pred_mask,  cmap=cmap2, alpha=alpha)
+    axes[1, 1].xaxis.set_visible(False)
+    axes[1, 1].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[1, 1])
+    cax = divider.append_axes("right", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='right')
+
+    axes[2, 1].set_title('Impurity of Wrong Predictions')
+    axes[2, 1].imshow(img_np, cmap=cmap1)
+    im_score = axes[2, 1].imshow(
+        impurity_np*wrong_pred_mask,  cmap=cmap2, alpha=alpha)
+    axes[2, 1].xaxis.set_visible(False)
+    axes[2, 1].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[2, 1])
+    cax = divider.append_axes("right", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='right')
+
+    axes[3, 1].set_title('Hyper Certainty of Wrong Predictions')
+    axes[3, 1].imshow(img_np, cmap=cmap1)
+    im_score = axes[3, 1].imshow(
+        hypcert_np*wrong_pred_mask,  cmap=cmap2, alpha=alpha)
+    axes[3, 1].xaxis.set_visible(False)
+    axes[3, 1].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[3, 1])
+    cax = divider.append_axes("right", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='right')
+
+    mask1 = pred_segm_map == gt_segm_map
+    mask2 = gt_segm_map != 255
+
+    correct_pred_mask = (mask1 * mask2)*1.0
+    correct_pred_mask = F.interpolate(torch.Tensor(correct_pred_mask).unsqueeze(0).unsqueeze(
+        0), size=decoder_out.shape[-2:], mode='nearest')[0, 0]   # 640, 1280 -->  160, 320
+    correct_pred_mask = correct_pred_mask.cpu().numpy()
+
+    axes[0, 2].set_title('Hyper Uncertainty of Correct Predictions')
+    axes[0, 2].imshow(img_np, cmap=cmap1)
+    im_score = axes[0, 2].imshow(
+        hypunc_np*correct_pred_mask,  cmap=cmap2, alpha=alpha)
+    axes[0, 2].xaxis.set_visible(False)
+    axes[0, 2].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[0, 2])
+    cax = divider.append_axes("right", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='right')
+
+    axes[1, 2].set_title('Entropy of Correct Predictions')
+    axes[1, 2].imshow(img_np, cmap=cmap1)
+    im_score = axes[1, 2].imshow(
+        entropy_np*correct_pred_mask,  cmap=cmap2, alpha=alpha)
+    axes[1, 2].xaxis.set_visible(False)
+    axes[1, 2].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[1, 2])
+    cax = divider.append_axes("right", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='right')
+
+    axes[2, 2].set_title('Impurity of Correct Predictions')
+    axes[2, 2].imshow(img_np, cmap=cmap1)
+    im_score = axes[2, 2].imshow(
+        impurity_np*correct_pred_mask,  cmap=cmap2, alpha=alpha)
+    axes[2, 2].xaxis.set_visible(False)
+    axes[2, 2].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[2, 2])
+    cax = divider.append_axes("right", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='right')
+
+    axes[3, 2].set_title('Hyper Certainty of Correct Predictions')
+    axes[3, 2].imshow(img_np, cmap=cmap1)
+    im_score = axes[3, 2].imshow(
+        hypcert_np*correct_pred_mask,  cmap=cmap2, alpha=alpha)
+    axes[3, 2].xaxis.set_visible(False)
+    axes[3, 2].yaxis.set_visible(False)
+    divider = make_axes_locatable(axes[3, 2])
+    cax = divider.append_axes("right", size="20%", pad=0.05)
+    plt.colorbar(im_score, cax=cax, location='right')
+
+    # make directory if it doesn't exist
+    # if not os.path.exists(cfg.SAVE_DIR + '/viz'):
+    #     os.makedirs(cfg.SAVE_DIR + '/viz')
+    # name = name.rsplit('/', 1)[-1].rsplit('_', 1)[0]
+    # file_name = cfg.SAVE_DIR + '/viz/' + name + '_wrong.png'
+
+    # plt.suptitle(name)
+    plt.savefig(name)
+    plt.close()

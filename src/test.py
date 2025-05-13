@@ -1,10 +1,12 @@
-import setproctitle
+import os
 import warnings
-from core.utils.misc import mkdir, parse_args
+
+import pytorch_lightning as pl
+import setproctitle
+
 from core.configs import cfg
 from core.train_learners import Test
-import pytorch_lightning as pl
-import os
+from core.utils.misc import mkdir, parse_args
 
 warnings.filterwarnings('ignore')
 

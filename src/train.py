@@ -1,4 +1,4 @@
-import datetime
+
 import os
 import random
 import shutil
@@ -10,15 +10,10 @@ import setproctitle
 import torch
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.wandb import WandbLogger
-from pytorch_lightning.strategies import DDPStrategy
 
 from core.configs import cfg
-from core.train_learners import (
-    FullySupervisedLearner,
-    SourceFreeLearner,
-    SourceLearner,
-    SourceTargetLearner,
-)
+from core.train_learners import (FullySupervisedLearner, SourceFreeLearner,
+                                 SourceLearner, SourceTargetLearner)
 from core.utils.misc import mkdir, parse_args
 
 warnings.filterwarnings("ignore")
